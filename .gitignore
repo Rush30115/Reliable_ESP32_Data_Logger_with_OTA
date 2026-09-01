@@ -1,0 +1,9 @@
+# ESP-IDF build output
+build/
+
+# Debian package (exceeds GitHub 100MB limit)
+docker-desktop-amd64.deb
+*.deb
+
+# Editor / IDE
+.vscode/
