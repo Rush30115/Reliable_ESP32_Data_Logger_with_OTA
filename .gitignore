@@ -1,0 +1,8 @@
+build/
+sdkconfig
+sdkconfig.old
+*.bin
+*.deb
+*.elf
+.vscode/
+__pycache__/
