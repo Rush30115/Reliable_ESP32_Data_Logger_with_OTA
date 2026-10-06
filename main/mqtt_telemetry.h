@@ -10,10 +10,12 @@ extern "C" {
 #endif
 
 #define UBIDOTS_BROKER_URI    "mqtt://industrial.api.ubidots.com:1883"
-#define UBIDOTS_TOKEN         "BBUS-DSDYa8l30k02zpTkD9MxV633fQVcKI"
-#define UBIDOTS_DEVICE_ID     "6a7c5e3aa9e66fc6fba1fe2b"
-#define UBIDOTS_DEVICE_LABEL  "reliable-esp"
-#define UBIDOTS_PUB_TOPIC     "/v1.6/devices/reliable-esp"
+#define UBIDOTS_TOKEN         "BBUS-ojkkNHhIpShPFMpEAIp8zLiEMGG8CN"
+#define UBIDOTS_DEVICE_ID     "6abc9ebb6119b2dce8e77571"
+#define UBIDOTS_DEVICE_LABEL  "data-logger"
+#define UBIDOTS_PUB_TOPIC     "/v1.6/devices/data-logger"
+#define MQTT_THRESHOLD_TOPIC  "device/threshold"
+#define UBIDOTS_SUB_THRESHOLD_TOPIC "/v1.6/devices/data-logger/threshold/lv"
 
 /**
  * @brief Initialize Ubidots MQTT telemetry client.

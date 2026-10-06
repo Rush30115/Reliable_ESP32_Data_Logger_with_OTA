@@ -4,10 +4,15 @@ idf_component_register(
         "sensor_record.c"
         "dht22.c"
         "sensor_engine.c"
+        "valve_control.c"
         "storage_engine.c"
         "wifi_manager.c"
         "http_telemetry.c"
+        "mqtt_telemetry.c"
         "system_health.c"
+        "oled_display.c"
+        "display_test.c"
+        "sht40.c"
     INCLUDE_DIRS "."
     EMBED_TXTFILES "certs/server_cert.pem"
     REQUIRES 
@@ -15,6 +20,7 @@ idf_component_register(
         esp_wifi 
         esp_event 
         esp_http_client 
+        mqtt
         json 
         esp_timer 
         driver                               

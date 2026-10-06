@@ -9,6 +9,10 @@
 #include "wifi_manager.h"
 #include "http_telemetry.h"
 #include "system_health.h"
+#include "valve_control.h"
+#include "mqtt_telemetry.h"
+#include "oled_display.h"
+#include "display_test.h"
 #include "esp_https_ota.h"                                               
 #include "esp_http_client.h"                                             
 #include "esp_ota_ops.h"                                                 
@@ -181,16 +185,30 @@ void app_main(void)
     // 3. Initialize Storage Subsystem (NVS & LittleFS Store-and-Forward Engine)
     ESP_ERROR_CHECK(storage_engine_init());
 
-    // 4. Initialize Hardware Sensor Engine (DHT22 on GPIO 5)
+    // 4. Initialize Valve Control Subsystem (GPIO 12, Threshold 30.0)
+    ESP_ERROR_CHECK(valve_control_init(DEFAULT_VALVE_GPIO_PIN, DEFAULT_PRESSURE_THRESHOLD));
+
+    // 5. Initialize Hardware Sensor Engine & Run OLED Display Diagnostic Test Suite
+    ESP_LOGI(TAG, "Running OLED Display Hardware Diagnostic Test Suite...");
+    display_test_report_t display_report;
+    esp_err_t oled_ret = display_test_run(OLED_SDA_PIN, OLED_SCL_PIN, &display_report);
+    if (oled_ret == ESP_OK) {
+        ESP_LOGI(TAG, "OLED Hardware Diagnostic PASSED! Address: 0x%02X", display_report.oled_addr);
+    } else {
+        ESP_LOGE(TAG, "OLED Hardware Diagnostic FAILED (%s): %s",
+                 esp_err_to_name(oled_ret), display_report.diag_message);
+        ESP_LOGW(TAG, "Continuing boot sequence. Check physical wiring / pins / address.");
+    }
     ESP_ERROR_CHECK(sensor_engine_init(SENSOR_GPIO_PIN));
 
-    // 5. Initialize Network Manager (Wi-Fi Station & State Machine)
-    ESP_ERROR_CHECK(wifi_manager_init("Wokwi-GUEST", ""));
+    // 6. Initialize Network Manager (Wi-Fi Station & State Machine)
+    ESP_ERROR_CHECK(wifi_manager_init("Rushank's X8 Pro", "rushank63"));
 
-    // 6. Initialize Telemetry Engine (Ubidots HTTP REST API Client)
+    // 7. Initialize Telemetry Engine (Ubidots HTTP REST API Client & MQTT Client)
     ESP_ERROR_CHECK(http_telemetry_init(UBIDOTS_HTTP_URL, UBIDOTS_TOKEN));
+    ESP_ERROR_CHECK(mqtt_telemetry_init(UBIDOTS_BROKER_URI, UBIDOTS_TOKEN, UBIDOTS_DEVICE_LABEL));
 
-    // 7. Spawn Multi-Tasking Architecture across ESP32 Dual Cores
+    // 8. Spawn Multi-Tasking Architecture across ESP32 Dual Cores
     // LED Blinker Task (Core 1, Priority 1) - Blinks designated Pin (Pin 2 / 3 / 4)
     xTaskCreatePinnedToCore(
         led_blink_task,
@@ -228,6 +246,17 @@ void app_main(void)
     xTaskCreatePinnedToCore(
         http_telemetry_task,
         "telemetry_task",
+        6144,
+        NULL,
+        3,
+        NULL,
+        0
+    );
+
+    // MQTT Bi-Directional Telemetry & Threshold Task (Core 0, Priority 3)
+    xTaskCreatePinnedToCore(
+        mqtt_telemetry_task,
+        "mqtt_task",
         6144,
         NULL,
         3,

@@ -10,9 +10,9 @@ extern "C" {
 #endif
 
 // Centralized Ubidots HTTP REST API Cloud Endpoint Parameters
-#define UBIDOTS_HTTP_URL          "http://industrial.api.ubidots.com/api/v1.6/devices/reliable-esp"
-#define UBIDOTS_TOKEN             "BBUS-DSDYa8l30k02zpTkD9MxV633fQVcKI"
-#define UBIDOTS_DEVICE_LABEL      "reliable-esp"
+#define UBIDOTS_HTTP_URL          "http://industrial.api.ubidots.com/api/v1.6/devices/data-logger"
+#define UBIDOTS_TOKEN             "BBUS-ojkkNHhIpShPFMpEAIp8zLiEMGG8CN"
+#define UBIDOTS_DEVICE_LABEL      "data-logger"
 #define HTTP_DRAIN_INTERVAL_MS    100 // 100ms yield delay for fast Ubidots HTTP FIFO backlog drain
 
 /**

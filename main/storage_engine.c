@@ -152,7 +152,10 @@ esp_err_t storage_read_oldest_record(sensor_record_t *record)
 
     FILE *f = fopen(filepath, "rb");
     if (!f) {
-        ESP_LOGW(TAG, "Log file %s not found for read", filepath);
+        ESP_LOGW(TAG, "Log file %s not found for read. Auto-advancing tail index...", filepath);
+        s_tail_index++;
+        if (s_pending_records > 0) s_pending_records--;
+        save_nvs_indices();
         xSemaphoreGive(xFlashMutex);
         return ESP_ERR_NOT_FOUND;
     }
@@ -204,9 +207,11 @@ uint32_t storage_get_pending_count(void)
     return s_pending_records;
 }
 
-// Forward declaration from telemetry engine
+// Forward declaration from telemetry engines
 extern bool http_telemetry_is_connected(void);
 extern esp_err_t http_telemetry_publish_record(const sensor_record_t *record);
+extern bool mqtt_telemetry_is_connected(void);
+extern esp_err_t mqtt_telemetry_publish_record(const sensor_record_t *record);
 
 void storage_engine_task(void *pvParameters)
 {
@@ -218,14 +223,23 @@ void storage_engine_task(void *pvParameters)
     while (1) {
         // Dequeue sensor record from queue with 500ms block
         if (xQueueReceive(xSensorQueue, &record, pdMS_TO_TICKS(500)) == pdTRUE) {
-            if (http_telemetry_is_connected()) {
-                // Online mode: direct telemetry publication
-                ESP_LOGI(TAG, "Online mode: Routing Record #%lu directly to HTTP telemetry", record.record_id);
-                if (http_telemetry_publish_record(&record) != ESP_OK) {
-                    // Fallback to flash buffer if direct publication fails
-                    storage_write_record(&record);
+            bool published = false;
+
+            if (mqtt_telemetry_is_connected()) {
+                ESP_LOGI(TAG, "Online mode: Routing Record #%lu to MQTT telemetry", record.record_id);
+                if (mqtt_telemetry_publish_record(&record) == ESP_OK) {
+                    published = true;
                 }
-            } else {
+            }
+
+            if (http_telemetry_is_connected()) {
+                ESP_LOGI(TAG, "Online mode: Routing Record #%lu to HTTP telemetry", record.record_id);
+                if (http_telemetry_publish_record(&record) == ESP_OK) {
+                    published = true;
+                }
+            }
+
+            if (!published) {
                 // Offline mode: store in LittleFS persistent circular buffer
                 ESP_LOGW(TAG, "Offline mode: Buffering Record #%lu to LittleFS circular storage", record.record_id);
                 storage_write_record(&record);

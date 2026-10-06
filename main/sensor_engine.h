@@ -23,6 +23,11 @@ esp_err_t sensor_engine_init(gpio_num_t pin);
  */
 void sensor_engine_task(void *pvParameters);
 
+/**
+ * @brief Retrieve the most recent pressure (simulated from temperature sensor) reading.
+ */
+float sensor_engine_get_last_pressure(void);
+
 #ifdef __cplusplus
 }
 #endif

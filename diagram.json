@@ -8,14 +8,21 @@
     { "type": "wokwi-led", "id": "led_pin2", "top": 120, "left": -110, "attrs": { "color": "green", "label": "Pin 2 (Boot v1)" } },
     { "type": "wokwi-led", "id": "led_pin3", "top": 180, "left": -110, "attrs": { "color": "yellow", "label": "Pin 15 (OTA v2)" } },
     { "type": "wokwi-led", "id": "led_pin4", "top": 240, "left": -110, "attrs": { "color": "blue", "label": "Pin 4 (OTA v3)" } },
+    { "type": "wokwi-led", "id": "led_valve", "top": 300, "left": -110, "attrs": { "color": "red", "label": "Valve Relay (GPIO 12)" } },
     { "type": "wokwi-resistor", "id": "r1", "top": 130, "left": -35, "attrs": { "value": "220" } },
     { "type": "wokwi-resistor", "id": "r2", "top": 190, "left": -35, "attrs": { "value": "220" } },
     { "type": "wokwi-resistor", "id": "r3", "top": 250, "left": -35, "attrs": { "value": "220" } },
-    { "type": "wokwi-pushbutton", "id": "btn1", "top": 100, "left": 200, "attrs": { "color": "blue" } }
+    { "type": "wokwi-resistor", "id": "r4", "top": 310, "left": -35, "attrs": { "value": "220" } },
+    { "type": "wokwi-pushbutton", "id": "btn1", "top": 100, "left": 200, "attrs": { "color": "blue" } },
+    { "type": "board-ssd1306", "id": "oled1", "top": -150, "left": -100, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "oled1:VCC", "esp:3V3", "red", [] ],
+    [ "oled1:GND", "esp:GND.1", "black", [] ],
+    [ "oled1:SDA", "esp:21", "blue", [] ],
+    [ "oled1:SCL", "esp:22", "yellow", [] ],
     [ "dht1:VCC", "esp:3V3", "red", [] ],
     [ "dht1:GND", "esp:GND.1", "black", [] ],
     [ "dht1:SDA", "esp:5", "green", [] ],
@@ -28,6 +35,9 @@
     [ "esp:4", "r3:1", "blue", [] ],
     [ "r3:2", "led_pin4:A", "blue", [] ],
     [ "led_pin4:C", "esp:GND.1", "black", [] ],
+    [ "esp:12", "r4:1", "red", [] ],
+    [ "r4:2", "led_valve:A", "red", [] ],
+    [ "led_valve:C", "esp:GND.1", "black", [] ],
     [ "btn1:1.l", "esp:13", "blue", [] ],
     [ "btn1:2.l", "esp:GND.2", "black", [] ]
   ],
